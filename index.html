@@ -5,67 +5,60 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Моя музыка</title>
     <style>
-        body { 
-            font-family: Arial, sans-serif; 
-            max-width: 600px; 
-            margin: 0 auto; 
-            padding: 20px; 
-            line-height: 1.6;
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
         }
-        #track-info { 
-            margin-top: 20px; 
-            padding: 20px; 
-            background: #f8f9fa; 
-            border-radius: 8px; 
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        #track-info {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f5f5f5;
+            border-radius: 8px;
         }
-        .loading { color: #6c757d; }
-        .error { color: #dc3545; }
+        .loading { color: #666; }
+        .error { color: #d32f2f; }
     </style>
 </head>
 <body>
-    <h1>Сейчас играет в Яндекс.Музыке:</h1>
+    <h1>Сейчас играет:</h1>
     <div id="track-info">
         <p>Артист: <span id="artist" class="loading">Загрузка...</span></p>
         <p>Трек: <span id="track" class="loading">Загрузка...</span></p>
-        <p id="last-updated" class="text-muted"></p>
+        <p id="last-updated"></p>
     </div>
 
-    <!-- Подключаем Supabase JS библиотеку -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Подключаем Supabase через классический script -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0/dist/umd/supabase.min.js"></script>
     
     <script>
-        // Конфигурация Supabase
-        const SUPABASE_CONFIG = {
-            url: 'https://gaxylnqojebengfduqpp.supabase.co',
-            key: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdheHlsbnFvamViZW5nZmR1cXBwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDUzMTM5MzQsImV4cCI6MjA2MDg4OTkzNH0.Uz1zHc4-k8PPftgCG1EXw6PTloVOmPXDNRFoqhotzpA' // ЗАМЕНИТЕ НА РЕАЛЬНЫЙ КЛЮЧ
-        };
+        // Конфигурация (ЗАМЕНИТЕ НА СВОИ ДАННЫЕ)
+        const SUPABASE_URL = 'https://gaxylnqojebengfduqpp.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdheHlsbnFvamViZW5nZmR1cXBwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDUzMTM5MzQsImV4cCI6MjA2MDg4OTkzNH0.Uz1zHc4-k8PPftgCG1EXw6PTloVOmPXDNRFoqhotzpA';
         
-        // Ждем полной загрузки страницы
-        document.addEventListener('DOMContentLoaded', async () => {
+        // Основная функция
+        async function initApp() {
             try {
-                // 1. Инициализируем Supabase
-                const supabase = supabase.createClient(
-                    SUPABASE_CONFIG.url, 
-                    SUPABASE_CONFIG.key
-                );
+                // 1. Инициализация Supabase
+                const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
                 
-                // 2. Первоначальная загрузка
-                await updateTrackInfo(supabase);
+                // 2. Первая загрузка данных
+                await fetchTrack(supabaseClient);
                 
-                // 3. Настраиваем периодическое обновление
+                // 3. Настройка периодического обновления
                 setInterval(async () => {
-                    await updateTrackInfo(supabase);
+                    await fetchTrack(supabaseClient);
                 }, 30000);
                 
             } catch (error) {
                 console.error('Ошибка инициализации:', error);
                 showError();
             }
-        });
+        }
         
-        // Функция обновления информации о треке
-        async function updateTrackInfo(supabase) {
+        // Получение данных о треке
+        async function fetchTrack(supabase) {
             try {
                 const { data, error } = await supabase
                     .from('Tracks')
@@ -76,25 +69,28 @@
                 
                 if (error) throw error;
                 
-                updateUI(
+                updateDisplay(
                     data?.artist || 'Неизвестно',
                     data?.track || 'Неизвестно',
                     data?.created_at
                 );
                 
             } catch (error) {
-                console.error('Ошибка получения трека:', error);
+                console.error('Ошибка загрузки трека:', error);
                 showError();
             }
         }
         
         // Обновление интерфейса
-        function updateUI(artist, track, timestamp) {
-            document.getElementById('artist').textContent = artist;
-            document.getElementById('artist').className = '';
+        function updateDisplay(artist, track, timestamp) {
+            const artistEl = document.getElementById('artist');
+            const trackEl = document.getElementById('track');
             
-            document.getElementById('track').textContent = track;
-            document.getElementById('track').className = '';
+            artistEl.textContent = artist;
+            trackEl.textContent = track;
+            
+            artistEl.className = '';
+            trackEl.className = '';
             
             if (timestamp) {
                 const time = new Date(timestamp).toLocaleTimeString();
@@ -104,16 +100,18 @@
         
         // Показать ошибку
         function showError() {
-            const elements = [
-                document.getElementById('artist'),
-                document.getElementById('track')
-            ];
+            const artistEl = document.getElementById('artist');
+            const trackEl = document.getElementById('track');
             
-            elements.forEach(el => {
-                el.textContent = 'Ошибка загрузки';
-                el.className = 'error';
-            });
+            artistEl.textContent = 'Ошибка загрузки';
+            trackEl.textContent = 'Ошибка загрузки';
+            
+            artistEl.className = 'error';
+            trackEl.className = 'error';
         }
+        
+        // Запуск при полной загрузке страницы
+        window.addEventListener('DOMContentLoaded', initApp);
     </script>
 </body>
 </html>
