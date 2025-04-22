@@ -1,61 +1,71 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Текущий трек</title>
+    <title>Моя музыка</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; }
+        #track-info { margin-top: 20px; padding: 15px; background: #f5f5f5; border-radius: 8px; }
+    </style>
 </head>
 <body>
-    <h1>Сейчас играет:</h1>
-    <p>Артист: <span id="artist">Загрузка...</span></p>
-    <p>Трек: <span id="track">Загрузка...</span></p>
+    <h1>Сейчас играет в Яндекс.Музыке:</h1>
+    <div id="track-info">
+        <p>Артист: <span id="artist">Загрузка...</span></p>
+        <p>Трек: <span id="track">Загрузка...</span></p>
+        <p id="last-updated"></p>
+    </div>
 
-    <!-- Подключение библиотеки Supabase -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
-
+    <!-- Подключаем Supabase JS библиотеку -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
     <script>
-        // Инициализация Supabase
-        const supabaseUrl = 'https://gaxylnqojebengfduqpp.supabase.co';
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdheHlsbnFvamViZW5nZmR1cXBwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDUzMTM5MzQsImV4cCI6MjA2MDg4OTkzNH0.Uz1zHc4-k8PPftgCG1EXw6PTloVOmPXDNRFoqhotzpA'; // Здесь вставьте ваш ключ
-        const supabase = supabase.createClient(supabaseUrl, supabaseKey);
-
+        // Основная функция, которая выполняется после загрузки страницы
+        async function init() {
+            // 1. Инициализируем Supabase
+            const supabaseUrl = 'https://gaxylnqojebengfduqpp.supabase.co';
+            const supabaseKey = 'ваш_публичный_ключ'; // Замените на настоящий ключ!
+            const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+            
+            // 2. Получаем данные о треке
+            await fetchCurrentTrack(supabase);
+            
+            // 3. Обновляем каждые 30 секунд
+            setInterval(async () => {
+                await fetchCurrentTrack(supabase);
+            }, 30000);
+        }
+        
         // Функция для получения текущего трека
-        async function getCurrentTrack() {
+        async function fetchCurrentTrack(supabase) {
             try {
-                // Запрос к базе данных Supabase
                 const { data, error } = await supabase
                     .from('Tracks')
-                    .select('artist, track')
+                    .select('artist, track, created_at')
                     .order('created_at', { ascending: false })
                     .limit(1)
-                    .single();  // Получаем один последний трек
-
-                if (error) {
-                    console.error('Ошибка при получении данных:', error);
-                    return;
+                    .single();
+                
+                if (error) throw error;
+                
+                document.getElementById('artist').textContent = data?.artist || 'Неизвестно';
+                document.getElementById('track').textContent = data?.track || 'Неизвестно';
+                
+                if (data?.created_at) {
+                    const updatedAt = new Date(data.created_at).toLocaleTimeString();
+                    document.getElementById('last-updated').textContent = `Обновлено: ${updatedAt}`;
                 }
-
-                // Если данных нет, показываем дефолтные значения
-                if (!data) {
-                    console.log('Нет данных о треке');
-                    document.getElementById('artist').textContent = 'Неизвестно';
-                    document.getElementById('track').textContent = 'Неизвестно';
-                    return;
-                }
-
-                // Выводим данные о текущем треке
-                console.log('Текущий трек:', data);
-                document.getElementById('artist').textContent = data.artist || 'Неизвестно';
-                document.getElementById('track').textContent = data.track || 'Неизвестно';
+                
             } catch (error) {
-                console.error('Ошибка при запросе к Supabase:', error);
+                console.error('Ошибка:', error);
+                document.getElementById('artist').textContent = 'Ошибка загрузки';
+                document.getElementById('track').textContent = 'Ошибка загрузки';
             }
         }
-
-        // Загружаем информацию о текущем треке
-        window.onload = function() {
-            getCurrentTrack();
-        };
+        
+        // Запускаем при полной загрузке страницы
+        window.addEventListener('DOMContentLoaded', init);
     </script>
 </body>
 </html>
