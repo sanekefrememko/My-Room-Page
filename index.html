@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Текущий трек</title>
+    <!-- Подключаем Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/supabase-js@1.35.0/dist/umd/supabase.js"></script>
     <style>
         body {
@@ -28,31 +29,40 @@
     </div>
 
     <script>
-        // Инициализация Supabase
-        const supabaseUrl = 'https://gaxylnqojebengfduqpp.supabase.co';
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdheHlsbnFvamViZW5nZmR1cXBwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDUzMTM5MzQsImV4cCI6MjA2MDg4OTkzNH0.Uz1zHc4-k8PPftgCG1EXw6PTloVOmPXDNRFoqhotzpA';  // Вставь свой ключ
-        const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+        // Убедимся, что скрипт загружается только после загрузки страницы
+        document.addEventListener("DOMContentLoaded", function() {
+            // Инициализация Supabase
+            const supabaseUrl = 'https://gaxylnqojebengfduqpp.supabase.co';
+            const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdheHlsbnFvamViZW5nZmR1cXBwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDUzMTM5MzQsImV4cCI6MjA2MDg4OTkzNH0.Uz1zHc4-k8PPftgCG1EXw6PTloVOmPXDNRFoqhotzpA';  // Вставь свой ключ
+            const supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
-        // Функция для получения текущего трека
-        async function getCurrentTrack() {
-            const { data, error } = await supabase
-                .from('Tracks')
-                .select('artist, track')
-                .order('created_at', { ascending: false })
-                .limit(1)
-                .single();
+            // Функция для получения текущего трека
+            async function getCurrentTrack() {
+                try {
+                    // Выполняем запрос
+                    const { data, error } = await supabase
+                        .from('Tracks')
+                        .select('artist, track')
+                        .order('created_at', { ascending: false })
+                        .limit(1)
+                        .single();
 
-            if (error) {
-                console.error('Ошибка при получении данных:', error);
-            } else {
-                console.log('Данные о треке:', data);  // Проверим данные в консоли
-                document.getElementById('artist').textContent = data.artist || 'Неизвестно';
-                document.getElementById('track').textContent = data.track || 'Неизвестно';
+                    if (error) {
+                        console.error('Ошибка при получении данных:', error);
+                    } else {
+                        console.log('Данные о треке:', data);  // Для отладки
+                        // Отображаем данные на странице
+                        document.getElementById('artist').textContent = data.artist || 'Неизвестно';
+                        document.getElementById('track').textContent = data.track || 'Неизвестно';
+                    }
+                } catch (error) {
+                    console.error('Ошибка в запросе:', error);
+                }
             }
-        }
 
-        // Загружаем информацию о текущем треке
-        getCurrentTrack();
+            // Загружаем информацию о текущем треке
+            getCurrentTrack();
+        });
     </script>
 </body>
 </html>
