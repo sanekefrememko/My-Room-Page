@@ -52,7 +52,7 @@
     </div>
 
     <!-- Подключаем Supabase через CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@1.35.6"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
     <script>
         // Конфигурация (ЗАМЕНИТЕ НА СВОИ ДАННЫЕ)
@@ -63,7 +63,7 @@
         async function initApp() {
             try {
                 // 1. Инициализация клиента Supabase
-                const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+                const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
                 
                 // 2. Первая загрузка данных
                 await loadTrack(supabase);
