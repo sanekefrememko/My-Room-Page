@@ -45,6 +45,7 @@
             if (error) {
                 console.error('Ошибка при получении данных:', error);
             } else {
+                console.log('Данные о треке:', data);  // Проверим данные в консоли
                 document.getElementById('artist').textContent = data.artist || 'Неизвестно';
                 document.getElementById('track').textContent = data.track || 'Неизвестно';
             }
