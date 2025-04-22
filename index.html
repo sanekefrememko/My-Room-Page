@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Текущий трек</title>
+    <script src="https://cdn.jsdelivr.net/npm/supabase-js@1.35.0/dist/umd/supabase.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 20px;
+        }
+        .track-info {
+            font-size: 20px;
+            margin-top: 20px;
+        }
+        .track-info span {
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>Сейчас играет:</h1>
+    <div class="track-info">
+        <p><span>Артист:</span> <span id="artist">Загрузка...</span></p>
+        <p><span>Трек:</span> <span id="track">Загрузка...</span></p>
+    </div>
+
+    <script>
+        // Подключаемся к Supabase
+        const supabaseUrl = 'https://gaxylnqojebengfduqpp.supabase.co';
+        const supabaseKey = 'your-anon-key';  // Убедись, что ты добавил свой Supabase ключ
+        const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
+        // Функция для получения текущего трека
+        async function getCurrentTrack() {
+            const { data, error } = await supabase
+                .from('Tracks')
+                .select('artist, track')
+                .order('created_at', { ascending: false })
+                .limit(1)
+                .single();
+
+            if (error) {
+                console.error('Ошибка при получении данных:', error);
+            } else {
+                document.getElementById('artist').textContent = data.artist || 'Неизвестно';
+                document.getElementById('track').textContent = data.track || 'Неизвестно';
+            }
+        }
+
+        // Загружаем информацию о текущем треке
+        getCurrentTrack();
+    </script>
+</body>
+</html>
