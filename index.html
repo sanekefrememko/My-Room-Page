@@ -4,42 +4,28 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Текущий трек</title>
-    <!-- Подключаем Supabase -->
-    <script src="https://cdn.jsdelivr.net/npm/supabase-js@1.35.0/dist/umd/supabase.js"></script>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            padding: 20px;
-        }
-        .track-info {
-            font-size: 20px;
-            margin-top: 20px;
-        }
-        .track-info span {
-            font-weight: bold;
-        }
-    </style>
 </head>
 <body>
     <h1>Сейчас играет:</h1>
-    <div class="track-info">
-        <p><span>Артист:</span> <span id="artist">Загрузка...</span></p>
-        <p><span>Трек:</span> <span id="track">Загрузка...</span></p>
-    </div>
+    <p>Артист: <span id="artist">Загрузка...</span></p>
+    <p>Трек: <span id="track">Загрузка...</span></p>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
     <script>
-        // Убедимся, что скрипт загружается только после загрузки страницы
+        // Инициализируем Supabase
+        const supabaseUrl = 'https://gaxylnqojebengfduqpp.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdheHlsbnFvamViZW5nZmR1cXBwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDUzMTM5MzQsImV4cCI6MjA2MDg4OTkzNH0.Uz1zHc4-k8PPftgCG1EXw6PTloVOmPXDNRFoqhotzpA';  // Замените на ваш правильный ключ
+        const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
         document.addEventListener("DOMContentLoaded", function() {
-            // Инициализация Supabase
-            const supabaseUrl = 'https://gaxylnqojebengfduqpp.supabase.co';
-            const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdheHlsbnFvamViZW5nZmR1cXBwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDUzMTM5MzQsImV4cCI6MjA2MDg4OTkzNH0.Uz1zHc4-k8PPftgCG1EXw6PTloVOmPXDNRFoqhotzpA';  // Вставь свой ключ
-            const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+            console.log("Страница загружена");
 
             // Функция для получения текущего трека
             async function getCurrentTrack() {
                 try {
-                    // Выполняем запрос
+                    console.log("Отправляю запрос к Supabase...");
+
+                    // Отправка запроса
                     const { data, error } = await supabase
                         .from('Tracks')
                         .select('artist, track')
@@ -51,7 +37,8 @@
                         console.error('Ошибка при получении данных:', error);
                     } else {
                         console.log('Данные о треке:', data);  // Для отладки
-                        // Отображаем данные на странице
+
+                        // Отображаем данные о треке на странице
                         document.getElementById('artist').textContent = data.artist || 'Неизвестно';
                         document.getElementById('track').textContent = data.track || 'Неизвестно';
                     }
